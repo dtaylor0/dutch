@@ -1,7 +1,7 @@
 function Header() {
     return (
         <header>
-            <h1 className="w-90vw c-#eee bg-#78e m-0 p-t-0.5em p-b-0.5em b-rd-t-2">
+            <h1 className="c-#eee bg-#78e m-0 p-t-0.5em p-b-0.5em b-rd-t-2">
                 dutch
             </h1>
             <nav>
