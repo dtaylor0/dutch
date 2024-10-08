@@ -2,23 +2,16 @@ import "./App.css";
 import Header from "./components/Header";
 import Items from "./components/Items";
 import People from "./components/People";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
-const peopleExample = [
-    { id: 0, name: "Drew", symbol: "\u{1F4BB}", blah: "blah" },
-    { id: 1, name: "Andy", symbol: "\u{1F3A8}" },
-    { id: 2, name: "Scout", symbol: "\u{1F4A2}" },
-];
-
-const itemsExample = [
-    { name: "banana", cost: 1.26, quantity: 6, people: [0, 1, 2] },
-];
 function App() {
     return (
-        <>
+        <DndProvider backend={HTML5Backend}>
             <Header />
-            <Items items={itemsExample} />
-            <People people={peopleExample} />
-        </>
+            <Items />
+            <People />
+        </DndProvider>
     );
 }
 
