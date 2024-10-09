@@ -3,7 +3,6 @@ import { useDrop } from "react-dnd";
 /** @typedef {import("./People").PersonProps} PersonProps */
 
 /** @typedef {Object} ItemProps
- * @property {string} itemId
  * @property {string} name
  * @property {number} cost
  * @property {number} quantity
@@ -44,7 +43,7 @@ const itemsExample = {
     },
 };
 
-/** @param {ItemProps & {updateItemPeople: (itemId: string, person: PersonProps) => void}} props */
+/** @param {ItemProps & { itemId: string } & {updateItemPeople: (itemId: string, person: PersonProps) => void}} props */
 function Item({ itemId, name, cost, quantity, people, updateItemPeople }) {
     const [{ isOver }, drop] = useDrop(() => ({
         accept: "PERSON",
@@ -107,7 +106,7 @@ function Items() {
             id="items"
             className="bg-#ddd b-rd-2 w-60% m-3 inline-block vertical-top p-2"
         >
-            <h2 className="m-0">Items</h2>
+            <h2 className="m-0">Receipt</h2>
             <div className="m-1 p-1">
                 {Object.entries(items).map(([itemId, item]) => {
                     return (
@@ -129,15 +128,16 @@ function Items() {
                 <div className="menu-item bg-inherit">
                     <button
                         onClick={() => {
-                            const newItemId = crypto.randomUUID();
+                            /** @type {Object.<string, ItemProps>} newItem */
+                            const newItemProps = {
+                                name: "item",
+                                cost: 99.99,
+                                quantity: 23,
+                                people: {},
+                            };
                             setItems((prev) => ({
                                 ...prev,
-                                [newItemId]: {
-                                    name: "Item",
-                                    cost: 99.99,
-                                    quantity: 23,
-                                    people: [],
-                                },
+                                [crypto.randomUUID()]: newItemProps,
                             }));
                         }}
                     >
