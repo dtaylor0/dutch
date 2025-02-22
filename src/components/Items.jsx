@@ -1,151 +1,90 @@
-import { useState } from "react";
-import { useDrop } from "react-dnd";
-/** @typedef {import("./People").PersonProps} PersonProps */
-
-/** @typedef {Object} ItemProps
- * @property {string} name
- * @property {number} cost
- * @property {number} quantity
- * @property {Object.<string, PersonProps>} people
- * */
-
-/** @type {Object.<string, ItemProps>} */
-const itemsExample = {
-    [crypto.randomUUID()]: {
-        name: "banana",
-        cost: 1.26,
-        quantity: 6,
-        people: {},
-    },
-    [crypto.randomUUID()]: {
-        name: "apple",
-        cost: 2.11,
-        quantity: 6,
-        people: {},
-    },
-    [crypto.randomUUID()]: {
-        name: "orange",
-        cost: 2.78,
-        quantity: 6,
-        people: {},
-    },
-    [crypto.randomUUID()]: {
-        name: "laskdfjklsadfjklsdjdslkjf",
-        cost: 1.26,
-        quantity: 6,
-        people: {},
-    },
-    [crypto.randomUUID()]: {
-        name: "banana",
-        cost: 1.26,
-        quantity: 6,
-        people: {},
-    },
-};
-
-/** @param {ItemProps & { itemId: string } & {updateItemPeople: (itemId: string, person: PersonProps) => void}} props */
-function Item({ itemId, name, cost, quantity, people, updateItemPeople }) {
-    const [{ isOver }, drop] = useDrop(() => ({
-        accept: "PERSON",
-        collect: (monitor) => ({
-            isOver: !!monitor.isOver(),
-        }),
-        /**
-         * Handles the drop event when a person is dropped onto an item
-         * @param {PersonProps} item - The person being dropped
-         */
-        drop: (item) => {
-            updateItemPeople(itemId, item);
-        },
-    }));
-    return (
-        <div
-            className={`menu-item flex ${isOver ? "bg-blue-200" : ""}`}
-            ref={drop}
-            id={itemId}
-        >
-            <div className="inline-block w-50% p-0">{name}</div>
-            <div className="inline-block w-15% p-0">${cost}</div>
-            <div className="inline-block w-20% p-0">{quantity}</div>
-            <div className="inline-block w-15% p-0">
-                {Object.values(people)
-                    .map((person) => person.symbol)
-                    .join(" ")}
-            </div>
-        </div>
-    );
-}
-
-/**
- * Adds a person to an item in the items object
- * @param {Object.<string, ItemProps>} prevItems - The previous state of items
- * @param {PersonProps} person - The person to be added to the item
- * @param {string} itemId - The ID of the item to which the person will be added
- * @returns {Object.<string, ItemProps>} - The updated items object
- */
-function addPersonToItem(prevItems, person, itemId) {
-    return {
-        ...prevItems,
-        [itemId]: {
-            ...prevItems[itemId],
-            people: {
-                ...prevItems[itemId].people,
-                [person.personId]: person,
-            },
-        },
-    };
-}
+import React, { useEffect, useRef, useState } from "react";
+import Item from "./Item";
+import Title from "./Title";
 
 /**
  * @returns {React.JSX.Element}
  */
 function Items() {
-    const [items, setItems] = useState(itemsExample);
+    /** @type ItemProps[] */
+    const initialItems = [];
+    const [items, setItems] = useState(initialItems);
+
+    /**
+     * Inject item index into setItems call
+     * @param { number } index
+     */
+    function setItemAt(index) {
+        return (/** @type ItemProps */ newItem) => {
+            setItems((prevItems) =>
+                prevItems.map((item, i) => {
+                    if (i === index) {
+                        return newItem;
+                    }
+                    return { ...item };
+                }),
+            );
+        };
+    }
+
+    useEffect(() => {
+        const storedItems = localStorage.getItem("items");
+        if (storedItems) {
+            setItems(JSON.parse(storedItems));
+        }
+    }, []);
+
+    /** @type { React.MutableRefObject<HTMLDivElement | null> } */
+    const receiptEndRef = useRef(null);
+    function scrollToBottom() {
+        receiptEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    useEffect(() => scrollToBottom(), [items]);
+
+    useEffect(
+        () => localStorage.setItem("items", JSON.stringify(items)),
+        [items],
+    );
+
     return (
-        <div
-            id="items"
-            className="bg-#ddd b-rd-2 w-60% m-3 inline-block vertical-top p-2"
-        >
-            <h2 className="m-0">Receipt</h2>
-            <div className="m-1 p-1">
-                {Object.entries(items).map(([itemId, item]) => {
+        <>
+            <Title>Receipt</Title>
+            <div
+                id="items"
+                className="w-full max-h-1/2 overflow-y-auto flex flex-col"
+            >
+                {items.map((item, index) => {
                     return (
                         <Item
-                            itemId={itemId}
+                            id={item.id}
                             name={item.name}
                             cost={item.cost}
                             quantity={item.quantity}
                             people={item.people}
-                            updateItemPeople={(itemId, person) => {
-                                setItems((prevItems) =>
-                                    addPersonToItem(prevItems, person, itemId),
-                                );
-                            }}
-                            key={itemId}
+                            key={item.id}
+                            setItem={setItemAt(index)}
                         />
                     );
                 })}
-                <div className="menu-item bg-inherit">
-                    <button
-                        onClick={() => {
-                            /** @type {Object.<string, ItemProps>} newItem */
-                            const newItemProps = {
-                                name: "item",
-                                cost: 99.99,
-                                quantity: 23,
-                                people: {},
-                            };
-                            setItems((prev) => ({
-                                ...prev,
-                                [crypto.randomUUID()]: newItemProps,
-                            }));
-                        }}
-                    >
-                        +
-                    </button>
-                </div>
+                <div ref={receiptEndRef}></div>
             </div>
-        </div>
+            <div
+                className="bg-slate-200 rounded-lg p-2 px-4 m-2 h-fit w-fit"
+                onClick={() => {
+                    /** @type ItemProps */
+                    const newItemProps = {
+                        name: "Item",
+                        cost: 0.0,
+                        quantity: 1,
+                        people: [],
+                        id: crypto.randomUUID(),
+                    };
+                    setItems((prev) => [...prev, newItemProps]);
+                }}
+            >
+                +
+            </div>
+        </>
     );
 }
 

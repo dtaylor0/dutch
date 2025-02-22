@@ -1,17 +1,11 @@
 import { useState } from "react";
-import { useDrag } from "react-dnd";
-
-/** @typedef {Object} PersonProps
- * @property {string} personId
- * @property {string} name
- * @property {string} symbol
- * */
+import Person from "./Person";
 
 /** @type PersonProps[] */
 const peopleExample = [
-    { personId: crypto.randomUUID(), name: "Drew", symbol: "\u{1F4BB}" },
-    { personId: crypto.randomUUID(), name: "Andy", symbol: "\u{1F3A8}" },
-    { personId: crypto.randomUUID(), name: "Scout", symbol: "\u{1F4A2}" },
+    { id: crypto.randomUUID(), name: "Drew", symbol: "\u{1F4BB}" },
+    { id: crypto.randomUUID(), name: "Andy", symbol: "\u{1F3A8}" },
+    { id: crypto.randomUUID(), name: "Scout", symbol: "\u{1F4A2}" },
 ];
 
 /**
@@ -19,55 +13,29 @@ const peopleExample = [
  */
 function People() {
     const [people, setPeople] = useState(peopleExample);
+    function addPerson() {
+        setPeople((prev) => [
+            ...prev,
+            {
+                id: crypto.randomUUID(),
+                name: "Test",
+                symbol: "\u{1F916}",
+            },
+        ]);
+    }
     return (
-        <div
-            id="people"
-            className="bg-#ddd b-rd-2 m-3 inline-block vertical-top p-2"
-        >
-            <h2 className="m-0">People</h2>
-            <ul className="m-1 p-1">
+        <div id="people">
+            <div className="w-full inline-flex flex-wrap justify-center">
                 {people.map((person) => {
-                    const [{ isDragging }, drag] = useDrag(() => ({
-                        type: "PERSON",
-                        item: {
-                            personId: person.personId,
-                            symbol: person.symbol,
-                            name: person.name,
-                        },
-                        collect: (monitor) => ({
-                            isDragging: !!monitor.isDragging(),
-                        }),
-                    }));
-                    return (
-                        <li
-                            className={`menu-item ${isDragging ? "opacity-50" : ""}`}
-                            id={person.personId}
-                            ref={drag}
-                            key={person.personId}
-                            style={{ cursor: isDragging ? "grabbing" : "grab" }}
-                        >
-                            <div>{person.symbol}</div>
-                            <div>{person.name}</div>
-                        </li>
-                    );
+                    return <Person key={person.id} person={person} />;
                 })}
-                <li className="menu-item bg-inherit">
-                    <button
-                        onClick={() =>
-                            setPeople((prev) => [
-                                ...prev,
-                                {
-                                    personId: crypto.randomUUID(),
-                                    name: "Test",
-                                    symbol: "\u{1F916}",
-                                },
-                            ])
-                        }
-                    >
-                        +
-                    </button>
-                </li>
-            </ul>
+                <div
+                    className="bg-slate-200 rounded-lg p-2 px-4 m-2 h-fit w-fit"
+                    onClick={addPerson}
+                >
+                    +
+                </div>
+            </div>
         </div>
     );
 }
