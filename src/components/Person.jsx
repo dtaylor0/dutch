@@ -1,12 +1,12 @@
 import { useDrag } from "react-dnd";
 
 /**
- * @param { {person: PersonProps} } person
+ * @param { {person: Person} } person
  */
 function Person({ person }) {
     const [{ isDragging }, drag] = useDrag(() => ({
         type: "PERSON",
-        /** @type PersonProps */
+        /** @type Person */
         item: {
             id: person.id,
             symbol: person.symbol,

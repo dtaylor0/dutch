@@ -1,28 +1,15 @@
-import { useState } from "react";
 import Person from "./Person";
-
-/** @type PersonProps[] */
-const peopleExample = [
-    { id: crypto.randomUUID(), name: "Drew", symbol: "\u{1F4BB}" },
-    { id: crypto.randomUUID(), name: "Andy", symbol: "\u{1F3A8}" },
-    { id: crypto.randomUUID(), name: "Scout", symbol: "\u{1F4A2}" },
-];
 
 /**
  * Creates a list of people
+ * @param {{
+ *      people: Person[],
+ *      onAddPerson: (person: Person) => void,
+ *      onRemovePerson: (personId: string) => void
+ *      onUpdatePerson: (person: Person) => void,
+ *  }} props
  */
-function People() {
-    const [people, setPeople] = useState(peopleExample);
-    function addPerson() {
-        setPeople((prev) => [
-            ...prev,
-            {
-                id: crypto.randomUUID(),
-                name: "Test",
-                symbol: "\u{1F916}",
-            },
-        ]);
-    }
+function People({ people, onAddPerson, onRemovePerson, onUpdatePerson }) {
     return (
         <div id="people">
             <div className="w-full inline-flex flex-wrap justify-center">
@@ -31,7 +18,13 @@ function People() {
                 })}
                 <div
                     className="bg-slate-200 rounded-lg p-2 px-4 m-2 h-fit w-fit"
-                    onClick={addPerson}
+                    onClick={() =>
+                        onAddPerson({
+                            name: "Test",
+                            id: crypto.randomUUID(),
+                            symbol: "🤖",
+                        })
+                    }
                 >
                     +
                 </div>

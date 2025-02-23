@@ -5,7 +5,9 @@ import "./index.css";
 
 const root = createRoot(document.getElementById("root"));
 root.render(
-    <div className="w-screen h-screen font-sans text-2xl lg:text-base">
-        <App />
-    </div>,
+    <StrictMode>
+        <div className="w-screen h-screen font-sans text-5xl lg:text-xl">
+            <App />
+        </div>
+    </StrictMode>,
 );

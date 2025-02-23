@@ -1,41 +1,40 @@
 import { useDrop } from "react-dnd";
-import { useState } from "react";
+import React, { useState } from "react";
 
 //  & {updateItemPeople: (id: string, person: PersonProps) => undefined}
 
 /**
  * Create an Item JSX element.
- * @param {ItemProps & {setItem: (arg0: ItemProps) => undefined}} itemId
+ * @param {{item: Item, onUpdateItem: (newItem: Item) => void, onRemoveItem: (itemId: string) => void}} itemId
  */
-function Item({ id, name, cost, quantity, people, setItem }) {
+function Item({ item, onUpdateItem, onRemoveItem }) {
     const [formValues, setFormValues] = useState({
-        id,
-        name,
-        quantity,
-        cost,
-        people,
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        cost: item.cost,
+        people: item.people,
     });
 
     const [hidden, setHidden] = useState(true);
 
-    const [{ isOver }, drop] = useDrop(() => ({
-        accept: "PERSON",
-        collect: (monitor) => ({
-            isOver: !!monitor.isOver(),
+    const [{ isOver }, drop] = useDrop(
+        () => ({
+            accept: "PERSON",
+            collect: (monitor) => ({
+                isOver: !!monitor.isOver(),
+            }),
+            /** @type (person: Person) => undefined */
+            drop: (person) => {
+                onUpdateItem({
+                    ...item,
+                    people: [...item.people, person],
+                });
+            },
         }),
-        /** @type (person: PersonProps) => undefined */
-        drop: (person) => {
-            setItem({
-                id,
-                name,
-                cost,
-                quantity,
-                people: [...people, person],
-            });
-        },
-    }));
+        [item],
+    );
 
-    /** @type {import("react").ChangeEventHandler} */
     const handleChange = (event) => {
         const name = event.target.name;
         const value = event.target.value;
@@ -43,14 +42,11 @@ function Item({ id, name, cost, quantity, people, setItem }) {
         setFormValues((values) => ({ ...values, [name]: value }));
     };
 
-    /** @type {import("react").FormEventHandler} */
+    /** @type {React.FormEventHandler} */
     const handleSubmit = (event) => {
         event.preventDefault();
-        //(e) => {
-        //e.preventDefault();
-        setItem(formValues);
+        onUpdateItem(formValues);
         setHidden(true);
-        //}
     };
 
     return (
@@ -58,24 +54,24 @@ function Item({ id, name, cost, quantity, people, setItem }) {
             <div
                 className={`flex bg-slate-200 rounded-lg p-2 m-2 ${isOver ? "outline-2" : ""}`}
                 ref={drop}
-                id={id}
+                id={item.id}
                 onClick={(_e) => setHidden(false)}
             >
                 <div className="flex-3">
-                    {name} ({quantity})
-                    {people.map((person) => person.symbol).join(" ")}
+                    {item.name} ({item.quantity})
+                    {item.people.map((person) => person.symbol).join(" ")}
                 </div>
-                <div className="flex-1 text-right">${cost}</div>
+                <div className="flex-1 text-right">${item.cost}</div>
             </div>
             <div
-                id={`${id}-form`}
+                id={`${item.id}-form`}
                 className={`${hidden ? "hidden " : ""}z-10 absolute h-full w-full bg-neutral-900/90`}
             >
                 <div className="bg-slate-200 w-fit m-auto rounded-lg p-1">
                     <button
                         className="text-sm font-bold text-slate-800/80 w-full text-right px-2"
                         onClick={() => {
-                            setFormValues({ id, name, cost, quantity, people });
+                            setFormValues(item);
                             setHidden(true);
                         }}
                     >
@@ -89,7 +85,7 @@ function Item({ id, name, cost, quantity, people, setItem }) {
                             className="rounded-lg bg-white w-fit p-1 m-1"
                             type="text"
                             name="name"
-                            id={`${id}-name`}
+                            id={`${item.id}-name`}
                             value={formValues.name}
                             onChange={handleChange}
                         />
@@ -100,7 +96,7 @@ function Item({ id, name, cost, quantity, people, setItem }) {
                             className="rounded-lg bg-white w-fit p-1 m-1"
                             type="text"
                             name="quantity"
-                            id={`${id}-quantity`}
+                            id={`${item.id}-quantity`}
                             value={formValues.quantity}
                             onChange={handleChange}
                         />
@@ -111,15 +107,26 @@ function Item({ id, name, cost, quantity, people, setItem }) {
                             className="rounded-lg bg-white w-fit p-1 m-1"
                             type="text"
                             name="cost"
-                            id={`${id}-cost`}
+                            id={`${item.id}-cost`}
                             value={formValues.cost}
                             onChange={handleChange}
                         />
-                        <input
-                            className="rounded-lg border-2 bg-white font-bold w-fit p-1 m-1"
-                            type="submit"
-                            value="Submit"
-                        />
+                        <div className="flex justify-between">
+                            <input
+                                className="rounded-lg border-2 bg-white font-bold w-fit p-1 m-1"
+                                type="submit"
+                                value="Submit"
+                            />
+                            <div
+                                className="text-red-600 rounded-lg border-2 bg-white font-bold w-fit p-1 m-1"
+                                onClick={() => {
+                                    onRemoveItem(item.id);
+                                    setHidden(true);
+                                }}
+                            >
+                                Delete
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
