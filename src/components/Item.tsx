@@ -41,7 +41,7 @@ function Item({ item, onUpdateItem, onRemoveItem }: ItemProps) {
                         .map((person: Person) => person.symbol)
                         .join(" ")}
                 </div>
-                <div className="flex-1 text-right">${item.cost}</div>
+                <div className="flex-1 text-right">${item.cost.toFixed(2)}</div>
             </div>
             <ItemForm
                 item={item}
